@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "@supabase/supabase-js": "^2.58.0"
+  "name": "perfume-shop",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }

@@ -1,42 +1,48 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
 // Supabase configuration
 const SUPABASE_URL = 'https://opgufswmhxmjedtcrdda.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZ3Vmc3dtaHhtamVkdGNyZGRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5ODI3ODYsImV4cCI6MjA3NDU1ODc4Nn0.SeEVnP-i6SgiUGh2OsgM1-F7flvTksuPdxF1mbA5klo';
 
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Admin authentication
-class AdminAuth {
+// Admin authentication using Supabase Auth
+export class AdminAuth {
   static async login(password) {
-    try {
-      // Simple password check - in production, use proper hashing
-      if (password === 'admin123') {
-        localStorage.setItem('adminLoggedIn', 'true');
-        return { success: true };
+    // Use a hardcoded email for the dedicated admin user.
+    // This keeps the login UI simple (password-only) while using
+    // Supabase's real authentication to satisfy RLS policies.
+    const adminEmail = 'admin@example.com';
+    const { error } = await supabase.auth.signInWithPassword({ 
+      email: adminEmail, 
+      password 
+    });
+    
+    if (error) {
+      // Provide a more user-friendly error message
+      if (error.message.includes('Invalid login credentials')) {
+        return { success: false, error: 'Invalid password. Please try again.' };
       }
-      return { success: false, error: 'Invalid password' };
-    } catch (error) {
       return { success: false, error: error.message };
     }
+    return { success: true };
   }
 
-  static logout() {
-    localStorage.removeItem('adminLoggedIn');
+  static async logout() {
+    await supabase.auth.signOut();
     window.location.href = 'admin-login.html';
   }
 
-  static isLoggedIn() {
-    return localStorage.getItem('adminLoggedIn') === 'true';
-  }
-
-  static requireAuth() {
-    if (!this.isLoggedIn()) {
+  static async requireAuth() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
       window.location.href = 'admin-login.html';
     }
   }
 }
 
 // Categories API
-class CategoriesAPI {
+export class CategoriesAPI {
   static async getAll() {
     const { data, error } = await supabase
       .from('categories')
@@ -79,7 +85,7 @@ class CategoriesAPI {
 }
 
 // Products API
-class ProductsAPI {
+export class ProductsAPI {
   static async getAll() {
     const { data, error } = await supabase
       .from('products')
@@ -91,6 +97,23 @@ class ProductsAPI {
         )
       `)
       .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async getById(id) {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (
+          id,
+          name
+        )
+      `)
+      .eq('id', id)
+      .single();
     
     if (error) throw error;
     return data;
@@ -128,7 +151,7 @@ class ProductsAPI {
 
   static async uploadImage(file) {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `products/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -146,13 +169,18 @@ class ProductsAPI {
 }
 
 // Dashboard stats
-class DashboardAPI {
+export class DashboardAPI {
   static async getStats() {
     const [categoriesResult, productsResult, outOfStockResult] = await Promise.all([
       supabase.from('categories').select('id', { count: 'exact' }),
       supabase.from('products').select('id', { count: 'exact' }),
       supabase.from('products').select('id', { count: 'exact' }).eq('in_stock', false)
     ]);
+
+    if (categoriesResult.error || productsResult.error || outOfStockResult.error) {
+        console.error("Error fetching stats:", categoriesResult.error || productsResult.error || outOfStockResult.error);
+        return { totalCategories: 0, totalProducts: 0, outOfStockProducts: 0 };
+    }
 
     return {
       totalCategories: categoriesResult.count || 0,

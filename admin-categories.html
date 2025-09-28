@@ -4,36 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categories - Admin Panel</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <div class="admin-layout">
         <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <h2>Admin Panel</h2>
+                <h2>The Perfume Slut</h2>
             </div>
             <nav class="sidebar-nav">
                 <a href="admin-dashboard.html" class="nav-item">
-                    <span>📊</span> Dashboard
+                    <span>📊</span> <span class="nav-item-text">Dashboard</span>
                 </a>
                 <a href="admin-categories.html" class="nav-item active">
-                    <span>📁</span> Categories
+                    <span>📁</span> <span class="nav-item-text">Categories</span>
                 </a>
                 <a href="admin-products.html" class="nav-item">
-                    <span>🛍️</span> Products
+                    <span>🛍️</span> <span class="nav-item-text">Products</span>
                 </a>
                 <a href="admin-settings.html" class="nav-item">
-                    <span>⚙️</span> Settings
+                    <span>⚙️</span> <span class="nav-item-text">Settings</span>
                 </a>
                 <a href="#" class="nav-item" onclick="AdminAuth.logout()">
-                    <span>🚪</span> Logout
+                    <span>🚪</span> <span class="nav-item-text">Logout</span>
                 </a>
             </nav>
         </aside>
 
         <main class="admin-main">
             <header class="admin-header">
+                <button class="mobile-nav-toggle" id="mobileNavToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
                 <h1>Categories</h1>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="showAddCategoryModal()">Add Category</button>
@@ -59,7 +66,6 @@
         </main>
     </div>
 
-    <!-- Add/Edit Category Modal -->
     <div id="categoryModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -67,9 +73,11 @@
                 <span class="close" onclick="closeCategoryModal()">&times;</span>
             </div>
             <form id="categoryForm">
-                <div class="form-group">
-                    <label for="categoryName">Category Name</label>
-                    <input type="text" id="categoryName" name="name" required>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name</label>
+                        <input type="text" id="categoryName" name="name" required>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
@@ -79,12 +87,24 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
-    <script>
-        AdminAuth.requireAuth();
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <a href="admin-dashboard.html" class="nav-item"><span>📊</span> Dashboard</a>
+        <a href="admin-categories.html" class="nav-item active"><span>📁</span> Categories</a>
+        <a href="admin-products.html" class="nav-item"><span>🛍️</span> Products</a>
+        <a href="admin-settings.html" class="nav-item"><span>⚙️</span> Settings</a>
+        <a href="#" class="nav-item" onclick="AdminAuth.logout()"><span>🚪</span> Logout</a>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        import { AdminAuth, CategoriesAPI } from './js/supabase.js';
+        import { setupMobileNav } from './js/admin-nav.js';
+
+        window.AdminAuth = AdminAuth;
         let editingCategoryId = null;
+        
+        AdminAuth.requireAuth();
+        setupMobileNav();
 
         async function loadCategories() {
             try {
@@ -107,48 +127,45 @@
             }
         }
 
-        function showAddCategoryModal() {
+        window.showAddCategoryModal = function() {
             document.getElementById('modalTitle').textContent = 'Add Category';
-            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryForm').reset();
             editingCategoryId = null;
-            document.getElementById('categoryModal').style.display = 'block';
+            document.getElementById('categoryModal').style.display = 'flex';
         }
 
-        function editCategory(id, name) {
+        window.editCategory = function(id, name) {
             document.getElementById('modalTitle').textContent = 'Edit Category';
             document.getElementById('categoryName').value = name;
             editingCategoryId = id;
-            document.getElementById('categoryModal').style.display = 'block';
+            document.getElementById('categoryModal').style.display = 'flex';
         }
 
-        function closeCategoryModal() {
+        window.closeCategoryModal = function() {
             document.getElementById('categoryModal').style.display = 'none';
         }
 
-        async function deleteCategory(id) {
-            if (confirm('Are you sure you want to delete this category?')) {
+        window.deleteCategory = async function(id) {
+            if (confirm('Are you sure you want to delete this category? This cannot be undone.')) {
                 try {
                     await CategoriesAPI.delete(id);
                     loadCategories();
                 } catch (error) {
                     console.error('Error deleting category:', error);
-                    alert('Error deleting category');
+                    alert('Error deleting category. Products might be associated with it.');
                 }
             }
         }
 
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const name = document.getElementById('categoryName').value;
-            
             try {
                 if (editingCategoryId) {
                     await CategoriesAPI.update(editingCategoryId, name);
                 } else {
                     await CategoriesAPI.create(name);
                 }
-                
                 closeCategoryModal();
                 loadCategories();
             } catch (error) {
@@ -157,7 +174,6 @@
             }
         });
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', loadCategories);
     </script>
 </body>

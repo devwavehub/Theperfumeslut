@@ -174,13 +174,3 @@ document.addEventListener('DOMContentLoaded', () => {
       displayCartItems();
       alert("Your order has been sent to WhatsApp! We'll contact you shortly.");
   });
-  
-  
-  
-  
- 
- 
-
-
-
-  
