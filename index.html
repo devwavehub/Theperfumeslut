@@ -35,19 +35,12 @@ s0.parentNode.insertBefore(s1,s0);
   <span class="close-btn" id="closeBtn">&times;</span>
   <a href="#">Home</a>
   <a href="#About">About the Brand</a>
-  <!--<a href="#shop">Shop</a>-->
   <div class="nav-item shop-dropdown">
-  <span class="shop-toggle">Shop ▾</span>
-  <div class="dropdown-menu">
-    <a href="#perfumeoils" class="category-link">Perfume Oils</a>
-    <a href="#minis" class="category-link">Minis</a>
-    <a href="#75-200mls" class="category-link">75-200mls Male</a>
-    <a href="#75-200mls f" class="category-link">75-200mls Female</a>
-    <a href="#diffusers" class="category-link">Diffusers</a>
-    <a href="#bodysprays">Body Sprays/Deodorants</a>
-    <a href="#combodeals" class="category-link">Combo deals</a>
+    <span class="shop-toggle">Shop ▾</span>
+    <div class="dropdown-menu" id="nav-category-links">
+      <!-- Category links will be dynamically inserted here -->
+    </div>
   </div>
-</div>
   <a href="#contact">Contact Us</a>
    <button id="cartButton">View Cart</button>
 </div>
@@ -93,19 +86,9 @@ s0.parentNode.insertBefore(s1,s0);
 </div>
 
 
-<!-- Sale Banner -->
-<!--<div class="sale-banner">-->
-<!--  <p class="sale-text">-->
-<!--    ðŸ'¥ 48-Hour Perfume Frenzy: <span class="highlight">128 Combo Deals</span> â€" Up to <span class="highlight">80% OFF</span>!-->
-<!--  </p>-->
-<!--  <p class="subtext">Pay Less, Smell More- The Clock's Ticking, Prices Are Dripping! 30-80% Off At The Perfume Slut!</p>-->
-<!--  <a href="index2.html" class="cta-button">Shop the Sale â†'</a>-->
-<!--</div>-->
-
-
 <!-- Heartbeat Animated Promo Banner -->
 <div class="promo-banner animated heartbeat">
-  Hurry now for sweet deals in our <a href="#combodeals" class="promo-link">Combo Deals</a> category!
+  Hurry now for sweet deals in our <a href="#combo-deals" class="promo-link">Combo Deals</a> category!
 </div>
 
 <style>
@@ -201,17 +184,15 @@ s0.parentNode.insertBefore(s1,s0);
      We specialize in authentic, internationally sourced perfumes, available in both boxed and tester forms to suit your style and budget.
   </P>
 <br>
- <p>At the heart of our brand is a fierce commitment to honesty and customer satisfaction. No imitations. <br> No empty promises. Just real perfumes, real value, and real care for our customers.</p>
-
- 
+ <p>At the heart of our brand is a fierce commitment to honesty and customer satisfaction. No imitations. <br> No empty promises. Just real perfumes, real value, and real care forÂ ourÂ customers.</p>
 </section>
 
-
-
 <section id="shop">
-  <div class="titleshop">
+    <h1 class="shop-title">Shop Our Scents</h1>
+    <div id="product-list">
       <!-- Products will be loaded dynamically from Supabase -->
-    </section>
+    </div>
+</section>
 
 <!-- Modal for zoom effect -->
 <div id="imageModal" class="modal">
@@ -220,11 +201,7 @@ s0.parentNode.insertBefore(s1,s0);
 </div>
 
 
-
- 
-
-
-  Cart Modal (hidden initially) 
+  <!-- Cart Modal (hidden initially) -->
  <div id="cartModal" class="cart-modal">
   <div class="cart-modal-content">
   <span id="closeCart" class="close"><i class="fas fa-times"></i></span>
@@ -236,19 +213,12 @@ s0.parentNode.insertBefore(s1,s0);
 </div>
 
 
-
-
-
-
-
-
 <footer id="contact" class="footer">
   <div class="footer-container">
     <!-- Brand + Contact -->
     <div class="footer-brand">
       <h3 class="footer-logo" >Contact The Perfume Slut</h3>
       <p class="contact-item"><i class="fas fa-phone-alt"></i> +234 7088975744</p>
-      <!-- <p class="contact-item" style="cursor: pointer;"><i class="fas fa-envelope"></i> info@yourbrand.com</p> -->
       <p class="contact-item">
         <i class="fab fa-whatsapp"></i>
         <a href="https://wa.me/+2347088975744" target="_blank">Chat on WhatsApp</a>
@@ -272,14 +242,8 @@ s0.parentNode.insertBefore(s1,s0);
     <!-- Categories -->
     <div class="footer-categories">
       <h4>Perfume Categories</h4>
-      <ul>
-        <li><a href="#perfumeoils">Perfume Oils</a></li>
-        <li><a href="#minis">Minis</a></li>
-        <li><a href="#75-200mls">75-200mls male</a></li>
-        <li><a href="#75-200mls f">75-200mls Female</a></li>
-        <li><a href="#diffusers">Diffusers</a></li>
-        <li><a href="#bodysprays">Body Sprays/Deodorants</a></li>
-        <li><a href="#combodeals">Combo deals</a></li>
+      <ul id="footer-category-links">
+        <!-- Category links will be dynamically inserted here -->
       </ul>
     </div>
   </div> 

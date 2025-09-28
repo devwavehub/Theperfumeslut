@@ -432,11 +432,29 @@
   color: #aaa;
 }
 
+.shop-title {
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 60px 0 40px 0;
+  color: #d4af37;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.category-title {
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  margin: 50px 0 30px 0;
+  color: #d4af37;
+}
 
 .product-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* or space-around / space-between */
+  justify-content: center;
   gap: 10px;
   padding: 10px;
 }
@@ -455,19 +473,21 @@
   margin: 10px;
   flex: 1 1 300px;   /* minimum width for each card */
   max-width: 320px;
+  position: relative; 
+  /* Required for overlay */
 }
-
-
 
 .product-card:hover {
   transform: translateY(-10px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
 }
 
-.product-card img {
+.product-card .product-image {
   width: 100%;
-   height: 200px;
+  height: 200px;
   object-fit: cover;
   border-radius: 8px;
+  /* margin-bottom: 15px; */
 }
 
 .product-card h3 {
@@ -475,18 +495,20 @@
   margin-top: 10px;
 }
 
-.product-card p {
+.product-card .description {
   font-size: 0.9em;
   color: #7f8c8d;
+  /* margin: 10px 0;
+  flex-grow: 1; */
 }
 
-.product-card span {
+.product-card .price {
   font-size: 1.1em;
   color: #2ecc71;
   margin: 10px 0;
 }
 
-.product-card button {
+.product-card .add-to-cart {
   background-color:  #b71c1c;
   color: white;
   padding: 10px;
@@ -496,19 +518,23 @@
   transition: background-color 0.3s ease;
 }
 
-.product-card button:hover {
-  color: gold;
+.product-card .add-to-cart:hover {
+  background-color: #d4af37;
+  color: #0a0a0a;
+}
+
+.product-card .add-to-cart:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+.product-card .add-to-cart:disabled:hover {
+  background-color: #555;
+  color: white;
 }
 
 
 /* Sold Out Overlay */
-.sold-out {
-  position: relative;
-  opacity: 0.6; /* Optional dim effect */
-  pointer-events: none; /* Prevent interaction */
-}
-
-.sold-out::after {
+.product-card.sold-out::after {
   content: "SOLD OUT";
   position: absolute;
   top: 40%;
@@ -521,11 +547,6 @@
   font-weight: bold;
   border-radius: 5px;
   z-index: 2;
-}
-
-/* Optional: Hide button when sold out */
-.sold-out button {
-  display: none;
 }
 
 
@@ -703,6 +724,10 @@
   @media (max-width: 768px) {
     .close-btn {
       display: block;
+    }
+    .shop-title {
+      font-size: 2.5rem;
+      margin: 40px 0 30px 0;
     }
   }
 

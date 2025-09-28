@@ -108,7 +108,7 @@
                             
                             <div class="form-group">
                                 <label for="productDescription">Description</label>
-                                <textarea id="productDescription" name="description" rows="6"></textarea>
+                                <textarea id="productDescription" name="description"></textarea>
                             </div>
                         </div>
                         <div class="product-form-image">
@@ -170,23 +170,25 @@
                 
                 tbody.innerHTML = products.map(product => `
                     <tr>
-                        <td>
+                        <td data-label="Image">
                             ${product.image_url ? 
                                 `<img src="${product.image_url}" alt="${product.name}" class="product-thumb">` : 
                                 '<div class="no-image">No Image</div>'
                             }
                         </td>
-                        <td>${product.name}</td>
-                        <td>${product.categories ? product.categories.name : 'Uncategorized'}</td>
-                        <td>₦${parseFloat(product.price).toLocaleString()}</td>
-                        <td>
+                        <td data-label="Name">${product.name}</td>
+                        <td data-label="Category">${product.categories ? product.categories.name : 'Uncategorized'}</td>
+                        <td data-label="Price">₦${parseFloat(product.price).toLocaleString()}</td>
+                        <td data-label="Stock">
                             <span class="stock-badge ${product.in_stock ? 'in-stock' : 'out-of-stock'}">
                                 ${product.in_stock ? 'In Stock' : 'Sold Out'}
                             </span>
                         </td>
-                        <td>
-                            <button class="btn btn-sm btn-secondary" onclick="editProduct('${product.id}')">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-secondary" onclick="editProduct('${product.id}')">Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
@@ -263,15 +265,14 @@
             }
         }
 
-        // ✅ Corrected handler here
         document.getElementById('productImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(ev) {
-                    updateImagePreview(ev.target.result);
+                reader.onload = function(e) {
+                    updateImagePreview(e.target.result);
                 };
-                reader.readAsDataURL(file); // <-- fixed
+                reader.readAsURL(file);
             }
         });
 

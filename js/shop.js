@@ -1,12 +1,39 @@
-import { ProductsAPI } from './supabase.js';
+import { ProductsAPI, CategoriesAPI } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    // --- Hamburger Menu, Slideshow, and other UI ---
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
     const closeBtn = document.getElementById('closeBtn');
 
+    // --- Smooth Scrolling for all internal links ---
+    // This uses event delegation, so it will work for dynamically added links too.
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('a');
+
+      if (target && target.getAttribute('href')?.startsWith('#')) {
+        const href = target.getAttribute('href');
+        
+        if (href === '#') {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        const targetElement = document.querySelector(href);
+        if (targetElement) {
+          e.preventDefault();
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+
+          // If it's a link inside the mobile nav, close the nav
+          if (navLinks && navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+          }
+        }
+      }
+    });
+
+    // --- Mobile Nav Logic ---
     if (hamburger && navLinks && closeBtn) {
       hamburger.addEventListener('click', () => {
         navLinks.classList.toggle('active');
@@ -19,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const shopToggle = document.querySelector('.shop-toggle');
     const shopDropdown = document.querySelector('.shop-dropdown');
-    const categoryLinks = document.querySelectorAll('.category-link');
 
     if (shopToggle && shopDropdown && navLinks) {
       shopToggle.addEventListener('click', (e) => {
@@ -29,13 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      categoryLinks.forEach(link => {
-        link.addEventListener('click', () => {
+      // Event delegation to handle clicks on dynamic category links
+      navLinks.addEventListener('click', (e) => {
+        if (e.target.classList.contains('category-link')) {
           if (window.innerWidth < 768) {
             navLinks.classList.remove('active');
             shopDropdown.classList.remove('active');
           }
-        });
+        }
       });
 
       document.addEventListener('click', () => {
@@ -45,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // --- Slideshow ---
     let slides = document.querySelectorAll('.slide');
     if (slides.length > 0) {
       let currentIndex = 0;
@@ -174,17 +202,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // --- Product Loading and Dynamic Cart Logic ---
-    const shopContainer = document.getElementById('shop');
+    // --- Dynamic Content Loading ---
+    const productListContainer = document.getElementById('product-list');
 
     async function loadProducts() {
-      if (!shopContainer) return;
-      shopContainer.innerHTML = '<p class="loading-text">Loading our amazing scents...</p>';
+      if (!productListContainer) return;
+      productListContainer.innerHTML = '<p class="loading-text">Loading our amazing scents...</p>';
 
       try {
         const products = await ProductsAPI.getAll();
         if (!products || products.length === 0) {
-          shopContainer.innerHTML = '<p>No products found at the moment. Please check back later!</p>';
+          productListContainer.innerHTML = '<p>No products found at the moment. Please check back later!</p>';
           return;
         }
 
@@ -203,32 +231,62 @@ document.addEventListener('DOMContentLoaded', () => {
           html += `
             <div class="category-section" id="${categoryId}">
               <h2 class="category-title">${category}</h2>
-              <div class="product-grid">
+              <div class="product-container">
                 ${productsByCategory[category].map(product => `
-                  <div class="product-card" data-id="${product.id}" data-name="${product.name}" data-price="${product.price}">
+                  <div class="product-card ${!product.in_stock ? 'sold-out' : ''}" data-id="${product.id}" data-name="${product.name}" data-price="${product.price}">
                     <img src="${product.image_url}" alt="${product.name}" class="product-image">
                     <h3>${product.name}</h3>
                     <p class="description">${product.description || ''}</p>
                     <p class="price">₦${product.price.toLocaleString()}</p>
-                    <button class="add-to-cart">Add to Cart</button>
+                    <button class="add-to-cart" ${!product.in_stock ? 'disabled' : ''}>
+                      ${!product.in_stock ? 'Sold Out' : 'Add to Cart'}
+                    </button>
                   </div>
                 `).join('')}
               </div>
             </div>
           `;
         }
-        shopContainer.innerHTML = html;
+        productListContainer.innerHTML = html;
 
       } catch (error) {
         console.error('Error loading products:', error);
-        shopContainer.innerHTML = `<p class="error-text">Oops! Something went wrong while fetching our products. Please try refreshing the page. Details: ${error.message}</p>`;
+        productListContainer.innerHTML = `<p class="error-text">Oops! Something went wrong while fetching our products. Please try refreshing the page. Details: ${error.message}</p>`;
       }
     }
 
-    if (shopContainer) {
-      shopContainer.addEventListener('click', (event) => {
+    async function loadDynamicCategories() {
+      const navLinksContainer = document.getElementById('nav-category-links');
+      const footerLinksContainer = document.getElementById('footer-category-links');
+
+      if (!navLinksContainer || !footerLinksContainer) return;
+
+      try {
+        const categories = await CategoriesAPI.getAll();
+        let navHtml = '';
+        let footerHtml = '';
+
+        categories.forEach(category => {
+          const categoryId = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          navHtml += `<a href="#${categoryId}" class="category-link">${category.name}</a>`;
+          footerHtml += `<li><a href="#${categoryId}">${category.name}</a></li>`;
+        });
+
+        navLinksContainer.innerHTML = navHtml;
+        footerLinksContainer.innerHTML = footerHtml;
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        navLinksContainer.innerHTML = '<a href="#" class="category-link">Error loading</a>';
+        footerLinksContainer.innerHTML = '<li><a href="#">Error loading</a></li>';
+      }
+    }
+
+    if (productListContainer) {
+      productListContainer.addEventListener('click', (event) => {
         if (event.target.classList.contains('add-to-cart')) {
           const productCard = event.target.closest('.product-card');
+          if (productCard.classList.contains('sold-out')) return;
+
           const productName = productCard.dataset.name;
           const productPrice = parseFloat(productCard.dataset.price);
 
@@ -255,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial setup calls
     updateCartCount();
     loadProducts();
+    loadDynamicCategories();
 
   } catch (error) {
     console.error("A critical error occurred during initialization:", error);
