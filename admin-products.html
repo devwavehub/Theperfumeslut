@@ -117,6 +117,7 @@
                                 <input type="file" id="productImage" accept="image/*" class="image-input">
                                 <label for="productImage" class="image-drop-zone">
                                     <div id="imagePreview" class="image-preview">
+                                        <img id="previewImageElement" src="#" alt="Product preview" style="display: none;">
                                         <div class="image-placeholder">
                                             <span>📷</span>
                                             <p>Click or drag to upload</p>
@@ -199,21 +200,17 @@
         }
         
         const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewElement = document.getElementById('previewImageElement');
         const imagePlaceholder = imagePreview.querySelector('.image-placeholder');
 
         function updateImagePreview(src) {
-            // Clear previous preview
-            const existingImg = imagePreview.querySelector('img');
-            if (existingImg) {
-                existingImg.remove();
-            }
-
             if (src) {
-                const img = document.createElement('img');
-                img.src = src;
-                imagePreview.appendChild(img);
+                imagePreviewElement.src = src;
+                imagePreviewElement.style.display = 'block';
                 imagePlaceholder.style.display = 'none';
             } else {
+                imagePreviewElement.src = '#';
+                imagePreviewElement.style.display = 'none';
                 imagePlaceholder.style.display = 'flex';
             }
         }
@@ -272,7 +269,7 @@
                 reader.onload = function(e) {
                     updateImagePreview(e.target.result);
                 };
-                reader.readAsURL(file);
+                reader.readAsDataURL(file);
             }
         });
 
